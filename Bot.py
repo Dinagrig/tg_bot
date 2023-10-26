@@ -22,6 +22,9 @@ def main():
     dispatcher: Dispatcher = updater.dispatcher
 
     start_handler = CommandHandler(('start', 'help'), start)
+    wish__1_handler = CommandHandler('wish_1', wish_1)
+    wish__2_handler = CommandHandler('wish_2', wish_2)
+    wish__3_handler = CommandHandler('wish_3', wish_3)
     keyboard_handler = CommandHandler('keyboard', keyboard)
     inline_keyboard_handler = CommandHandler('inline_keyboard', inline_keyboard)
     set_wish_timer_handler = CommandHandler('set', set_wish_timer)
@@ -30,6 +33,9 @@ def main():
     callback_handler = CallbackQueryHandler(keyboard_react)
 
     dispatcher.add_handler(start_handler)
+    dispatcher.add_handler(wish__1_handler)
+    dispatcher.add_handler(wish__2_handler)
+    dispatcher.add_handler(wish__3_handler)
     dispatcher.add_handler(keyboard_handler)
     dispatcher.add_handler(inline_keyboard_handler)
     dispatcher.add_handler(set_wish_timer_handler)
@@ -51,7 +57,7 @@ def do_echo(update: Update, context: CallbackContext):
 
     logger.info(f'{username=}({user_id=}) воззвал к Богу. Снизойти ли до его {text}?..')
     answer = f'Ты, {first_name}, взывающий(ая) к Богу, изрек(ла) {text}'
-    update.message.reply_text(answer, reply_markup=ReplyKeyboardRemove)
+    update.message.reply_text(answer)
 
 
 def start(update: Update, context: CallbackContext):
@@ -93,19 +99,68 @@ def keyboard(update: Update, context: CallbackContext):
 def inline_keyboard(update: Update, context: CallbackContext):
     username = update.message.from_user.username
     logger.info(f'{username=} ленится и вызвал инлайн клаву.')
+    btn1 = InlineKeyboardButton(text='Прочитать молитву 1', callback_data='/wish_1')
+    btn2 = InlineKeyboardButton(text='Прочитать молитву 2', callback_data='/wish_2')
+    btn3 = InlineKeyboardButton(text='Прочитать молитву 3', callback_data='/wish_3')
+    btn4 = InlineKeyboardButton(text='Прочитать молитву 4', callback_data='/wish_4')
+    btn5 = InlineKeyboardButton(text='Прочитать молитву 5', callback_data='/wish_5')
+
     buttons = [
-        ['Прочитать молитву 1', 'Прочитать молитву 2'],
-        ['Прочитать молитву 3', 'Прочитать молитву 4'],
-        ['Прочитать молитву 5']
+        [btn1, btn2],
+        [btn3, btn4],
+        [btn5]
     ]
-    keyboard_buttons = [[InlineKeyboardButton(text=text, callback_data=text) for text in row] for row in buttons]
-    keyboard = InlineKeyboardMarkup(keyboard_buttons)
+    keyboard = InlineKeyboardMarkup(buttons)
+
     text = 'Ну раз ты так ленив, выбери свою молитву на сегодня.'
     update.message.reply_text(
         text,
         reply_markup=keyboard
     )
     logger.info('живем, не ломаемся')
+
+
+def wish_1(update: Update, context: CallbackContext):
+    username = update.message.from_user.username
+    logger.info(f'{username=} хочет прочитать 1-ю молитву.')
+
+    text = [
+        'Господи, дай мне с душевным спокойствием встретить все, что даст мне сей день.',
+        ' Господи, дай мне вполне предаться воле Твоей Святой.',
+        ' Господи, на всякий час сего дня во всем наставь и поддержи меня.',
+        ' Господи, открой мне волю Твою для меня и окружающих меня.'
+        ]
+    text = '\n'.join(text)
+    update.message.reply_text(text)
+
+def wish_2(update: Update, context: CallbackContext):
+    username = update.message.from_user.username
+    logger.info(f'{username=} хочет прочитать 2-ю молитву.')
+
+    text = [
+        'Отче наш, сущий на небесах! Да святится имя Твое, да приидет Царствие Твое;',
+        'да будет воля Твоя и на земле, как на небе;',
+        'хлеб наш насущный дай нам на сей день;',
+        'и прости нам долги наши, как и мы прощаем должникам нашим;',
+        'и не введи нас в искушение, но избавь нас от лукавого.',
+        'Ибо Твое есть Царство и сила и слава во веки.'
+        ]
+    text = '\n'.join(text)
+    update.message.reply_text(text)
+
+
+def wish_3(update: Update, context: CallbackContext):
+    username = update.message.from_user.username
+    logger.info(f'{username=} хочет прочитать 3-ю молитву.')
+
+    text = [
+        'Святый Боже, Святый Крепкий, Святый Безсмертный, помилуй нас.',
+        '<i>Читается трижды, с крестным знамением и поясным поклоном.</i>',
+        'Слава Отцу и Сыну и Святому Духу, и ныне и присно и во веки веков.Аминь'
+
+        ]
+    text = '\n'.join(text)
+    update.message.reply_text(text)
 
 
 def keyboard_react(update: Update, context: CallbackContext):
@@ -122,7 +177,7 @@ def keyboard_react(update: Update, context: CallbackContext):
             row.pop(row.index(query.data))
     keyboard_buttons = [[InlineKeyboardButton(text=text, callback_data=text) for text in row] for row in buttons]
     keyboard = InlineKeyboardMarkup(keyboard_buttons)
-    text = 'Ну раз ты так ленив, выбери другую молитву на сегодня.'
+    text = 'Ну раз ты смеешь быть недовольным, выбери другую молитву на сегодня.'
     query.edit_message_text(
         text,
         reply_markup=keyboard
