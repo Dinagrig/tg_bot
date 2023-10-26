@@ -1,4 +1,4 @@
-from telegram import Update
+from telegram import Update, ParseMode
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import Updater
@@ -7,6 +7,7 @@ from telegram.ext import CallbackContext
 from telegram.ext import Filters
 from telegram.ext import Dispatcher
 import logging
+import datetime
 from key import TOKEN
 
 logging.basicConfig(
@@ -23,14 +24,19 @@ def main():
     start_handler = CommandHandler(('start', 'help'), start)
     keyboard_handler = CommandHandler('keyboard', keyboard)
     inline_keyboard_handler = CommandHandler('inline_keyboard', inline_keyboard)
+    set_wish_timer_handler = CommandHandler('set', set_wish_timer)
+    stop_wish_timer_handler = CommandHandler('stop', stop_wish_timer)
     echo_handler = MessageHandler(Filters.text, do_echo)
     callback_handler = CallbackQueryHandler(keyboard_react)
 
     dispatcher.add_handler(start_handler)
     dispatcher.add_handler(keyboard_handler)
     dispatcher.add_handler(inline_keyboard_handler)
+    dispatcher.add_handler(set_wish_timer_handler)
+    dispatcher.add_handler(stop_wish_timer_handler)
     dispatcher.add_handler(echo_handler)
     dispatcher.add_handler(callback_handler)
+
 
     updater.start_polling()
     logger.info(updater.bot.getMe())
@@ -58,7 +64,9 @@ def start(update: Update, context: CallbackContext):
         'В моей келье ты можешь:',
         '/start - посмотреть команды и поприветствовать твоего сегодняшнего наставника.',
         '/keyboard - вызвать клавиатуру, коли ты так ленив.',
-        '/inline_keyboard - вызвать прикрепленную к сообщению клавиатуру, коли ты совсем ленивю'
+        '/inline_keyboard - вызвать прикрепленную к сообщению клавиатуру, коли ты совсем ленив.',
+        '/set - начать подсчет времени молитвы.',
+        '/stop - закончить подсчет времени молитвы.'
         ]
     text = '\n'.join(text)
     update.message.reply_text(text)
@@ -114,13 +122,42 @@ def keyboard_react(update: Update, context: CallbackContext):
             row.pop(row.index(query.data))
     keyboard_buttons = [[InlineKeyboardButton(text=text, callback_data=text) for text in row] for row in buttons]
     keyboard = InlineKeyboardMarkup(keyboard_buttons)
-    text = 'Ну раз ты так ленив, выбери свою молитву на сегодня.'
+    text = 'Ну раз ты так ленив, выбери другую молитву на сегодня.'
     query.edit_message_text(
         text,
         reply_markup=keyboard
     )
     logger.info('живем, не ломаемся')
 
+
+def set_wish_timer(update: Update, context: CallbackContext):
+    user_id = update.effective_user.id
+    context.bot_data['user_id'] = user_id
+    context.bot_data['timer'] = datetime.datetime.now()
+    context.bot_data['timer_job'] = context.job_queue.run_repeating(show_seconds, 1)
+
+
+def show_seconds(context: CallbackContext):
+    logger.info(f'{context.job_queue.jobs()}')
+    message_id = context.bot_data.get('message_id', None)
+    user_id = context.bot_data['user_id']
+    timer = datetime.datetime.now() - context.bot_data['timer']
+    timer = timer.seconds
+    text = f'ты молишься уже {timer} секунд.'
+    text += '\nнажми /stop, чтобы остановить таймер.'
+    if not message_id:
+        message = context.bot.send_message(user_id, text)
+        context.bot_data['message_id'] = message.message_id
+    else:
+        context.bot.edit_message_text(text, chat_id=user_id, message_id=message_id)
+
+
+def stop_wish_timer(update: Update, context: CallbackContext):
+    user_id = update.effective_user.id
+    logger.info(f'{user_id} запутсил delete_timer')
+    timer = datetime.datetime.now() - context.bot_data['timer']
+    context.bot_data['timer_job'].schedule_removal()
+    update.message.reply_text(f'Таймер молитв остановлен. Ты молился {timer} секунд.')
 
 if __name__ == '__main__':
     main()
