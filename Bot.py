@@ -8,7 +8,9 @@ from telegram.ext import Filters
 from telegram.ext import Dispatcher
 import logging
 import datetime
+
 from key import TOKEN
+from fsm import register_handler
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -40,6 +42,7 @@ def main():
     dispatcher.add_handler(inline_keyboard_handler)
     dispatcher.add_handler(set_wish_timer_handler)
     dispatcher.add_handler(stop_wish_timer_handler)
+    dispatcher.add_handler(register_handler)
     dispatcher.add_handler(react_echo_kbt_handler)
     dispatcher.add_handler(callback_wish_handler)
 
@@ -84,6 +87,7 @@ def start(update: Update, context: CallbackContext):
         '/start - посмотреть команды и поприветствовать твоего сегодняшнего наставника.',
         '/keyboard - вызвать клавиатуру, чтобы управлять таймером, коли ты так ленив.',
         '/inline_keyboard - вызвать прикрепленную к сообщению клавиатуру с текстами молитв.',
+        '/register - "Беседы с батюшкой"..',
         '/set - начать подсчет времени молитвы.',
         '/stop - закончить подсчет времени молитвы.',
         '/wish_1 - прочитать молитву на день грядущий.',
@@ -102,7 +106,7 @@ def keyboard(update: Update, context: CallbackContext):
     ]
     keyboard = ReplyKeyboardMarkup(buttons, resize_keyboard=True)
 
-    text = 'Ну раз ты так ленив, выбери свою молитву на сегодня.'
+    text = 'Ну раз ты так ленив, запусти таймер.'
     update.message.reply_text(
         text,
         reply_markup=keyboard
