@@ -7,6 +7,7 @@ from telegram.ext import CallbackContext
 from telegram.ext import ConversationHandler
 from telegram.ext import Filters
 
+from db import write_to_db
 import logging
 
 logger = logging.getLogger(__name__)
@@ -16,6 +17,7 @@ WAIT_NAME, WAIT_SURNAME, WAIT_BIRTHDAY = range(3)
 
 def ask_name(update: Update, context: CallbackContext):
     user_id = update.message.from_user.id
+    context.user_data['userid'] = user_id
     username = update.message.from_user.username
     logger.info(f'{username}{user_id} хочет сообщить имя свое ("ask_name").')
     answer = [
@@ -31,10 +33,11 @@ def ask_name(update: Update, context: CallbackContext):
 def get_name(update: Update, context: CallbackContext):
     user_id = update.message.from_user.id
     username = update.message.from_user.username
-    text = update.message.text
+    textn = update.message.text
+    context.user_data['name'] = textn
     logger.info(f'{username}{user_id} спросил имя свое ("get_name").')
     answer = [
-        f'Твое имя - {text}!\n'
+        f'Твое имя - {textn}!\n'
 
     ]
     answer = '\n'.join(answer)
@@ -58,10 +61,11 @@ def ask_surname(update: Update, context: CallbackContext):
 def get_surname(update: Update, context: CallbackContext):
     user_id = update.message.from_user.id
     username = update.message.from_user.username
-    text = update.message.text
+    texts = update.message.text
+    context.user_data['surname'] = texts
     logger.info(f'{username}{user_id} спросил фамилию свою ("get_surname").')
     answer = [
-        f'Твоя фамилия - {text}!\n'
+        f'Твоя фамилия - {texts}!\n'
 
     ]
     answer = '\n'.join(answer)
@@ -88,6 +92,13 @@ def get_birthday(update: Update, context: CallbackContext):
 def register(update: Update, context: CallbackContext):
     user_id = update.message.from_user.id
     username = update.message.from_user.username
+    textb = update.message.text
+    context.user_data['birthday'] = textb
+    userid = context.user_data['userid']
+    name = context.user_data['name']
+    surname = context.user_data['surname']
+    birthday = context.user_data['birthday']
+    write_to_db(userid, name, surname, birthday)
     logger.info(f'{username}{user_id} ??"".')
     answer = [
         f'Благодарю!\n'
