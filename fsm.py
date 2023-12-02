@@ -35,7 +35,7 @@ def check_register(update: Update, context: CallbackContext):
     buttons = [InlineKeyboardButton(text='Да', callback_data='Да'),
                InlineKeyboardButton(text='Нет', callback_data='Нет')]
     keyboard = InlineKeyboardMarkup.from_row(buttons)
-    update.message.reply_text(text='Ты хочешь повторно стать собеседников Божьим?', reply_markup=keyboard)
+    update.message.reply_text(text='Ты хочешь повторно стать собеседником Божьим?', reply_markup=keyboard)
     return WAIT_OK
 
 
@@ -71,7 +71,7 @@ def get_name(update: Update, context: CallbackContext):
     context.user_data['name'] = textn
     logger.info(f'{username}{user_id} спросил имя свое ("get_name").')
     answer = [
-        f'Твое имя - {textn}!\n'
+        f'Твое имя - {textn}\n'
 
     ]
     answer = '\n'.join(answer)
@@ -83,7 +83,7 @@ def ask_surname(update: Update, context: CallbackContext):
     username = update.message.from_user.username
     logger.info(f'{username}{user_id} хочет сообщить фамилию свою ("ask_surname").')
     answer = [
-        f'Приветствую!\n'
+        f'Теперь..\n'
         f'Скажи мне фамилию свою.\n'
 
     ]
@@ -99,7 +99,7 @@ def get_surname(update: Update, context: CallbackContext):
     context.user_data['surname'] = texts
     logger.info(f'{username}{user_id} спросил фамилию свою ("get_surname").')
     answer = [
-        f'Твоя фамилия - {texts}!\n'
+        f'Твоя фамилия - {texts}\n'
 
     ]
     answer = '\n'.join(answer)
@@ -111,7 +111,7 @@ def ask_birthday(update: Update, context: CallbackContext):
     username = update.message.from_user.username
     logger.info(f'{username}{user_id} хочет сообщить день рождения своего ("ask_birthday").')
     answer = [
-        f'Привествую!\n'
+        f'Хорошо.\n'
         f'Скажи мне дату рождения своего.\n'
 
     ]
@@ -165,7 +165,6 @@ def ask_hairclr(update: Update, context: CallbackContext):
     username = update.message.from_user.username
     logger.info(f'{username}{user_id} хочет сказать цвет волос своих ("ask_hairclr").')
     answer = [
-        f'Учту..\n'
         f'Назови мне цвет волос своих.\n'
 
     ]
@@ -193,13 +192,14 @@ def register(update: Update, context: CallbackContext):
     birthday = context.user_data['birthday']
     teeth = context.user_data['teeth']
     hair = context.user_data['hair']
-    write_to_db(userid, name, surname, birthday)
+    write_to_db(userid, name, surname, birthday, teeth, hair)
 
     return ConversationHandler.END
 
 register_handler = ConversationHandler(
-    entry_points=[CommandHandler('register', ask_name)],
+    entry_points=[CommandHandler('register', check_register)],
     states={
+        WAIT_OK: [MessageHandler(Filters.text, get_yes_no)],
         WAIT_NAME: [MessageHandler(Filters.text, get_name)],
         WAIT_SURNAME: [MessageHandler(Filters.text, get_surname)],
         WAIT_BIRTHDAY: [MessageHandler(Filters.text, get_birthday)],
