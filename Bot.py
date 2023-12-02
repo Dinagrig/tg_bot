@@ -11,6 +11,7 @@ import datetime
 
 from key import TOKEN
 from fsm import register_handler
+from char import Character
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -87,7 +88,7 @@ def start(update: Update, context: CallbackContext):
         '/start - посмотреть команды и поприветствовать твоего сегодняшнего наставника.',
         '/keyboard - вызвать клавиатуру, чтобы управлять таймером, коли ты так ленив.',
         '/inline_keyboard - вызвать прикрепленную к сообщению клавиатуру с текстами молитв.',
-        '/register - "Беседы с батюшкой"..',
+        '/register - регистрация собеседником Божьим.',
         '/set - начать подсчет времени молитвы.',
         '/stop - закончить подсчет времени молитвы.',
         '/wish_1 - прочитать молитву на день грядущий.',
