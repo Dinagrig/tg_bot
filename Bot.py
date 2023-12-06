@@ -34,6 +34,7 @@ def main():
     stop_wish_timer_handler = CommandHandler('stop', stop_wish_timer)
     react_echo_kbt_handler = MessageHandler(Filters.text, react_echo_kbt)
     callback_wish_handler = CallbackQueryHandler(keyboard_react_wish)
+    links_music_handler = CommandHandler('music', links_music)
 
     dispatcher.add_handler(start_handler)
     dispatcher.add_handler(wish__1_handler)
@@ -41,6 +42,7 @@ def main():
     dispatcher.add_handler(wish__3_handler)
     dispatcher.add_handler(keyboard_handler)
     dispatcher.add_handler(inline_keyboard_handler)
+    dispatcher.add_handler(links_music_handler)
     dispatcher.add_handler(set_wish_timer_handler)
     dispatcher.add_handler(stop_wish_timer_handler)
     dispatcher.add_handler(register_handler)
@@ -79,18 +81,19 @@ def start(update: Update, context: CallbackContext):
     username = update.message.from_user.username
     first_name = update.message.from_user.first_name
 
-    logger.info(f'{username=} решил, что достоен диалога с Богом.')
+    logger.info(f'{username=} решил, что достоен диалога с Богом (/start).')
     text = [
         f'Приветствую тебя, {first_name}, смотрю, ты решил(a), что достоин диалога с Богом..',
         '<b>Дмитрий Валерьевич, доброго времени суток, советую Вам не вчитываться в текст, а просто смотреть'
         ' за работой функций:)</b>',
         'В моей келье ты можешь:',
         '/start - посмотреть команды и поприветствовать твоего сегодняшнего наставника.',
-        '/keyboard - вызвать клавиатуру, чтобы управлять таймером, коли ты так ленив.',
+        '/keyboard - вызвать клавиатуру, чтобы управлять таймером.',
         '/inline_keyboard - вызвать прикрепленную к сообщению клавиатуру с текстами молитв.',
+        '/music - вызвать клавиатуру с музыкой',
         '/register - регистрация собеседником Божьим.',
-        '/set - начать подсчет времени молитвы.',
-        '/stop - закончить подсчет времени молитвы.',
+        '/set - запустить таймер.',
+        '/stop - остановить таймер.',
         '/wish_1 - прочитать молитву на день грядущий.',
         '/wish_2 - прочитать Отче наш.',
         '/wish_3 - прочитать утреннюю молитву.'
@@ -119,21 +122,19 @@ def inline_keyboard(update: Update, context: CallbackContext):
     username = update.message.from_user.username
     logger.info(f'{username=} ленится и вызвал инлайн клаву.')
     buttons = [
-        [('wish 1', None), ('wish 2', None)],
-        [('wish 3', None), ('Пслушать Miserere mei', 'https://youtu.be/rs5bc_P1kKo?si=1etaiNhMsFP4tk_g')],
-        [('Послушать реквием', 'https://youtu.be/MlAuHoRXLes?si=hFE90zXhziauS4TQ'), ('Послушать '
-        'Оду к Радости', 'https://youtu.be/RPCv9rk_hH4?si=ei_Jm9Ct6ZyjN5-D')]
+        [InlineKeyboardButton(text='молитва на день грядущий', callback_data='wish 1'),
+         InlineKeyboardButton(text='Отче наш', callback_data='wish 2')],
+        [InlineKeyboardButton(text='утренняя молитва', callback_data='wish 3')]
     ]
-    keyboard_buttons = [[InlineKeyboardButton(text=text[0],
-                                              callback_data=text[0], url=text[1]) for text in row] for row in buttons]
-    keyboard = InlineKeyboardMarkup(keyboard_buttons)
+
+    keyboard = InlineKeyboardMarkup(buttons)
 
     text = 'Ну раз ты так ленив, выбери свою молитву на сегодня.'
     update.message.reply_text(
         text,
         reply_markup=keyboard
     )
-    logger.info('живем, не ломаемся')
+    logger.info('инлайн клава с молитвами выводится (inline_keyboard)')
 
 
 def wish_1(update: Update, context: CallbackContext):
@@ -183,22 +184,18 @@ def wish_3(update: Update, context: CallbackContext):
 def keyboard_react_wish(update: Update, context: CallbackContext):
     query = update.callback_query
     username = update.effective_user.username
-    logger.info(f'{username=} решил лениво помолиться.')
+    logger.info(f'{username=} вызвал реакцию клавы с молитвами (keyboard_react_wish).')
     buttons = [
-        [('wish 1', None), ('wish 2', None)],
-        [('wish 3', None), ('Пслушать Miserere mei', 'https://youtu.be/rs5bc_P1kKo?si=1etaiNhMsFP4tk_g')],
-        [('Послушать реквием', 'https://youtu.be/MlAuHoRXLes?si=hFE90zXhziauS4TQ'), ('Послушать '
-        'Оду к Радости', 'https://youtu.be/RPCv9rk_hH4?si=ei_Jm9Ct6ZyjN5-D')]
+        [InlineKeyboardButton(text='молитва на день грядущий', callback_data='wish 1'),
+         InlineKeyboardButton(text='Отче наш', callback_data='wish 2')],
+        [InlineKeyboardButton(text='утренняя молитва', callback_data='wish 3')]
     ]
-    # for row in buttons:
-    #     if query.data in row:
-    #         row.pop(row.index(query.data))
-    keyboard_buttons = [[InlineKeyboardButton(text=text[0],
-                                              callback_data=text[0], url=text[1]) for text in row] for row in buttons]
-    keyboard = InlineKeyboardMarkup(keyboard_buttons)
+
+    keyboard = InlineKeyboardMarkup(buttons)
     text = 'Ну раз ты смеешь быть недовольным, выбери другую молитву на сегодня.'
     # query.edit_message_text(
-    #     text,       'если тебе надо, чтобы сообщение изменялось, смотри с какой клавиатуры пришла кнопка' (( 'создай массив...'
+    #     text,       'если тебе надо, чтобы сообщение изменялось, смотри с какой клавиатуры пришла кнопка'
+    #     (( 'создай массив...'
     #     reply_markup=keyboard
     # )
     if query.data == 'wish 1':
@@ -210,7 +207,7 @@ def keyboard_react_wish(update: Update, context: CallbackContext):
         ]
         answer = '\n'.join(answer)
         query.message.reply_text(answer)
-        logger.info('живем, не ломаемся')
+        logger.info('молитва 1 в инлайн клаве работает')
     elif query.data == 'wish 2':
         answer = [
             'Отче наш, сущий на небесах! Да святится имя Твое, да приидет Царствие Твое;',
@@ -222,7 +219,7 @@ def keyboard_react_wish(update: Update, context: CallbackContext):
         ]
         answer = '\n'.join(answer)
         query.message.reply_text(answer)
-        logger.info('живем, не ломаемся')
+        logger.info('молитва 2 в инлайн клаве работает')
     elif query.data == 'wish 3':
         answer = [
             'Святый Боже, Святый Крепкий, Святый Безсмертный, помилуй нас.',
@@ -232,9 +229,35 @@ def keyboard_react_wish(update: Update, context: CallbackContext):
         ]
         answer = '\n'.join(answer)
         query.message.reply_text(answer, parse_mode=ParseMode.HTML, disable_web_page_preview=True)
-        logger.info('живем, не ломаемся')
+        logger.info('молитвы инлайн клавы выводятся (keyboard_react_wish)')
 
 
+def links_music(update: Update, context: CallbackContext):
+    query = update.callback_query
+    username = update.effective_user.username
+    logger.info(f'{username=} вызвал ссылки на музыку (links_music).')
+    buttons = [
+        [('Пслушать Miserere mei', 'https://youtu.be/rs5bc_P1kKo?si=1etaiNhMsFP4tk_g'),('Послушать реквием',
+        'https://youtu.be/MlAuHoRXLes?si=hFE90zXhziauS4TQ')],
+        [('Послушать '
+        'Оду к Радости', 'https://youtu.be/RPCv9rk_hH4?si=ei_Jm9Ct6ZyjN5-D')]
+    ]
+    # for row in buttons:
+    #     if query.data in row:
+    #         row.pop(row.index(query.data))
+    keyboard_buttons = [[InlineKeyboardButton(text=text[0], url=text[1]) for text in row] for row in buttons]
+    keyboard = InlineKeyboardMarkup(keyboard_buttons)
+    text = 'Ну раз ты смеешь быть недовольным, выбери другую молитву на сегодня.'
+    # query.edit_message_text(
+    #     text,       'если тебе надо, чтобы сообщение изменялось, смотри с какой клавиатуры пришла кнопка' (( 'создай массив...'
+    #     reply_markup=keyboard
+    # )
+    text = 'Выбери, чем ты хочешь насладиться сегодня.'
+    update.message.reply_text(
+        text,
+        reply_markup=keyboard
+    )
+    logger.info('музыка не ломается (links_music)')
 
 def set_wish_timer(update: Update, context: CallbackContext):
     user_id = update.effective_user.id
