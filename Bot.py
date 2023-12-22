@@ -285,6 +285,7 @@ def stop_wish_timer(update: Update, context: CallbackContext):
     user_id = update.effective_user.id
     logger.info(f'{user_id} запутсил delete_timer')
     timer = datetime.datetime.now() - context.bot_data['timer']
+    timer = timer.seconds
     context.bot_data['timer_job'].schedule_removal()
     update.message.reply_text(f'Таймер молитв остановлен. Ты молился {timer} секунд.')
     context.bot_data["message_id"] = None
