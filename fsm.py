@@ -32,27 +32,29 @@ def check_register(update: Update, context: CallbackContext):
     answer = '\n'.join(answer)
     update.message.reply_text(answer, reply_markup=ReplyKeyboardRemove())
 
-    buttons = [InlineKeyboardButton(text='Да', callback_data='Да'),
+    buttons_1 = [InlineKeyboardButton(text='Да', callback_data='Да'),
                InlineKeyboardButton(text='Нет', callback_data='Нет')]
-    keyboard = InlineKeyboardMarkup.from_row(buttons)
+    keyboard = InlineKeyboardMarkup.from_row(buttons_1)
     update.message.reply_text(text='Ты хочешь повторно стать собеседником Божьим?', reply_markup=keyboard)
     return WAIT_OK
 
 
 def get_yes_no(update: Update, context: CallbackContext):
-    user_id = update.message.from_user.id
-    username = update.message.from_user.username
-    logger.info(f'{username=} {user_id=} ответил, хочет ли регаться снова.')
+    user_id = update.effective_user.id
+    username = update.effective_user.username
+    logger.info(f'{username=} {user_id=}хочет повторно зарегаться ("get_yes_no").')
     query = update.callback_query
     if query.data == 'Да':
         return ask_name(update, context)
+    #TODO убрать клаву
+    logger.info(f'{username=} {user_id=} ответил, хочет ли регаться снова.')
     return ConversationHandler.END
 
 
 def ask_name(update: Update, context: CallbackContext):
-    user_id = update.message.from_user.id
+    user_id = update.effective_user.id
     context.user_data['userid'] = user_id
-    username = update.message.from_user.username
+    username = update.effective_user.username
     logger.info(f'{username}{user_id} хочет сообщить имя свое ("ask_name").')
     answer = [
         f'Приветствую!\n'
@@ -60,7 +62,8 @@ def ask_name(update: Update, context: CallbackContext):
 
     ]
     answer = '\n'.join(answer)
-    update.message.reply_text(answer, reply_markup=ReplyKeyboardRemove())
+    #update.message.reply_text(answer, reply_markup=ReplyKeyboardRemove())
+    context.bot.send_message(user_id, answer, reply_markup=ReplyKeyboardRemove())
 
     return WAIT_NAME
 
@@ -196,10 +199,11 @@ def register(update: Update, context: CallbackContext):
 
     return ConversationHandler.END
 
+
 register_handler = ConversationHandler(
     entry_points=[CommandHandler('register', check_register)],
     states={
-        WAIT_OK: [MessageHandler(Filters.text, get_yes_no)],
+        WAIT_OK: [CallbackQueryHandler(get_yes_no)],
         WAIT_NAME: [MessageHandler(Filters.text, get_name)],
         WAIT_SURNAME: [MessageHandler(Filters.text, get_surname)],
         WAIT_BIRTHDAY: [MessageHandler(Filters.text, get_birthday)],

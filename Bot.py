@@ -11,7 +11,6 @@ import datetime
 
 from key import TOKEN
 from fsm import register_handler
-from char import Character
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -120,7 +119,7 @@ def keyboard(update: Update, context: CallbackContext):
 
 def inline_keyboard(update: Update, context: CallbackContext):
     username = update.message.from_user.username
-    logger.info(f'{username=} ленится и вызвал инлайн клаву.')
+    logger.info(f'{username=} вызвал инлайн с молитвами.')
     buttons = [
         [InlineKeyboardButton(text='молитва на день грядущий', callback_data='wish 1'),
          InlineKeyboardButton(text='Отче наш', callback_data='wish 2')],
