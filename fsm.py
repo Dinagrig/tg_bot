@@ -42,11 +42,13 @@ def check_register(update: Update, context: CallbackContext):
 def get_yes_no(update: Update, context: CallbackContext):
     user_id = update.effective_user.id
     username = update.effective_user.username
-    logger.info(f'{username=} {user_id=}хочет повторно зарегаться ("get_yes_no").')
+    logger.info(f'{username=} {user_id=} ("get_yes_no").')
     query = update.callback_query
     if query.data == 'Да':
         return ask_name(update, context)
-    #TODO убрать клаву
+    if query.data == 'Нет':
+        context.bot.send_message(user_id, 'Твой ответ: "Нет".')
+    query.message.edit_reply_markup()
     logger.info(f'{username=} {user_id=} ответил, хочет ли регаться снова.')
     return ConversationHandler.END
 
